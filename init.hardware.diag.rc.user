@@ -14,19 +14,5 @@
 # limitations under the License.
 #
 
-on post-fs-data
-    # Modem logging collection
-    mkdir /data/vendor/radio 0777 radio radio
-    mkdir /data/vendor/radio/diag_logs 0777 system system
-
-# Contain user rules for DIAG access
-# For release-keys build, only works on Sprint SKU per requirements
-
-on property:debug.sys.logging=*
-   setprop persist.sys.logging ${debug.sys.logging}
-
-on property:persist.sys.logging=2
-   setprop sys.usb.config diag,serial_cdev,rmnet,adb
-
-on property:ro.boot.diagclean=true && property:sys.boot_completed=1
+on property:ro.boot.mode=normal
     rm /dev/diag

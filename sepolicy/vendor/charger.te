@@ -1,4 +1,2 @@
-allow charger sysfs_usb_c:file rw_file_perms;
-allow charger sysfs_msm_subsys:file rw_file_perms;
-
-
+typeattribute charger system_writes_vendor_properties_violators;
+set_prop(charger, public_vendor_system_prop)

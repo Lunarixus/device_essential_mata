@@ -14,23 +14,87 @@
 # limitations under the License.
 #
 
+on init
+    chmod 666 /dev/diag
+
 on post-fs-data
     # Modem logging collection
     mkdir /data/vendor/radio 0777 radio radio
     mkdir /data/vendor/radio/diag_logs 0777 system system
+    chmod 777 /data/vendor/radio/diag_logs/cfg
+    chmod 777 /data/vendor/radio/diag_logs/custom_cfg
+    # WLAN logging collection
+    mkdir /data/vendor/wifi 0777 system system
+    mkdir /data/vendor/wifi/cnss_diag 0777 system system
 
-# Allow to use ##DIAG## in userdebug also
-on property:debug.sys.logging=*
-   setprop persist.sys.logging ${debug.sys.logging}
-
-on property:persist.sys.logging=2
-   setprop sys.usb.config diag,serial_cdev,rmnet,adb
-
-service cnss_diag /vendor/bin/cnss_diag -q -f
-    class main
-    user system
-    group system wifi inet net_admin sdcard_rw media_rw diag
+service vendor.diag_mdlog_start /vendor/bin/diag_mdlog
+    class late_start
+    user shell
+    group system diag media_rw
+    disabled
     oneshot
 
-on property:vold.decrypt=trigger_restart_framework
-    start cnss_diag
+service vendor.diag_mdlog_stop /vendor/bin/diag_mdlog -k
+    class late_start
+    user shell
+    group system diag media_rw
+    disabled
+    oneshot
+
+on boot && property:persist.sys.modem.diag.mdlog=*
+    setprop sys.modem.diag.mdlog ${persist.sys.modem.diag.mdlog}
+
+on property:sys.modem.diag.mdlog=true
+    start vendor.diag_mdlog_start
+
+on property:sys.modem.diag.mdlog=false
+    start vendor.diag_mdlog_stop
+
+on property:persist.sys.cnss.diag_qxdm=true
+    start vendor.cnss_diag
+
+on property:persist.sys.cnss.diag_qxdm=false
+    stop vendor.cnss_diag
+
+on property:persist.sys.cnss.diag_txt=true
+    start vendor.cnss_diag_txt
+
+on property:persist.sys.cnss.diag_txt=false
+    stop vendor.cnss_diag_txt
+
+service vendor.cnss_diag /vendor/bin/cnss_diag -q -u -w
+    class late_start
+    user system
+    group system
+    disabled
+    oneshot
+
+service vendor.cnss_diag_txt /vendor/bin/cnss_diag -s -f -m /data/vendor/wifi/cnss_diag/cnss_diag.conf
+    class late_start
+    user system
+    group system
+    disabled
+    oneshot
+
+on property:vendor.debug.ramdump.force_crash=true
+    write /proc/sysrq-trigger "c"
+
+on property:sys.logger.bluetooth=true
+   setprop persist.vendor.service.bdroid.snooplog true
+   setprop persist.vendor.service.bdroid.fwsnoop true
+
+on property:sys.logger.bluetooth=false
+   setprop persist.vendor.service.bdroid.snooplog false
+   setprop persist.vendor.service.bdroid.fwsnoop false
+
+on property:persist.bluetooth.btsnoopenable=true
+   setprop persist.vendor.service.bdroid.soclog true
+
+on property:persist.bluetooth.btsnoopenable=false
+   setprop persist.vendor.service.bdroid.soclog false
+
+on property:vendor.usb.config=*
+   start usbd
+
+on property:persist.vendor.usb.usbradio.config=*
+   start usbd

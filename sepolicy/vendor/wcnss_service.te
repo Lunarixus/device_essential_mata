@@ -12,9 +12,7 @@ allow wcnss_service per_mgr_service:service_manager find;
 allow wcnss_service vendor_shell_exec:file rx_file_perms;
 allow wcnss_service vendor_toolbox_exec:file rx_file_perms;
 
-allow wcnss_service proc_net:file w_file_perms;
-
-allow wcnss_service self:capability { net_admin };
+allow wcnss_service proc_net_type:file { getattr w_file_perms };
 
 allow wcnss_service self:socket create_socket_perms;
 allowxperm wcnss_service self:socket ioctl msm_sock_ipc_ioctls;
@@ -25,29 +23,20 @@ allow wcnss_service self:netlink_socket create_socket_perms_no_ioctl;
 allow wcnss_service cnss_vendor_data_file:dir create_dir_perms;
 allow wcnss_service cnss_vendor_data_file:file create_file_perms;
 
-allow wcnss_service proc_net:file getattr;
-
 r_dir_file(wcnss_service, sysfs_msm_subsys)
 # pkt logging for cnss_diag
 userdebug_or_eng(`
   r_dir_file(wcnss_service, proc_wifi_dbg)
   r_dir_file(wcnss_service, sysfs_diag)
   allow wcnss_service sysfs_timestamp_switch:file r_file_perms;
-  # This is needed for ptt_socket app to write logs file collected to sdcard
-  r_dir_file(wcnss_service, storage_file)
-  r_dir_file(wcnss_service, mnt_user_file)
-  allow wcnss_service sdcardfs:dir create_dir_perms;
-  allow wcnss_service sdcardfs:file create_file_perms;
+  allow wcnss_service diag_device:chr_file rw_file_perms;
 ')
+dontaudit wcnss_service diag_device:chr_file rw_file_perms;
 
 allow wcnss_service sysfs_soc:dir search;
 allow wcnss_service sysfs_soc:file r_file_perms;
 
-r_dir_file(wcnss_service, sysfs_esoc)
-allow wcnss_service sysfs_esoc:dir search;
-allow wcnss_service sysfs_esoc:file r_file_perms;
+# request_firmware causes a denial for /firmware. It can be safely ignored
+dontaudit wcnss_service firmware_file:dir search;
 
-allow wcnss_service firmware_file:dir search;
-allow wcnss_service firmware_file:file r_file_perms;
-
-get_prop(wcnss_service, hwservicemanager_prop)
+r_dir_file(wcnss_service, sysfs_net)

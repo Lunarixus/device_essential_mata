@@ -8,3 +8,5 @@ init_daemon_domain(init_elabel)
 allow init_elabel shell_exec:file rx_file_perms;
 allow init_elabel toolbox_exec:file rx_file_perms;
 
+allow init_elabel elabel_data_file:dir rw_dir_perms;
+allow init_elabel elabel_data_file:file create_file_perms;

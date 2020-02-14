@@ -7,10 +7,10 @@ allow system_server persist_file:dir search;
 allow system_server persist_sensors_file:dir search;
 allow system_server persist_sensors_file:file r_file_perms;
 allow system_server wlan_device:chr_file rw_file_perms;
-allow system_server sysfs_msm_subsys:file { open read getattr};
 
-# Switch states
-r_dir_file(system_server, sysfs_audio)
+# TODO(b/73123675): BatterySaver needs access to cpufreq. Remove this access
+# once cpufreq functionality is hidden behind a HAL.
+allow system_server sysfs_devices_system_cpu:file w_file_perms;
 
 # TODO(b/30675296): Remove following dontaudit's upon resolution of this bug
 # The timerslack_ns denials spam the system really horribly
@@ -19,9 +19,7 @@ dontaudit system_server untrusted_app:file write;
 dontaudit system_server hal_audio_default:file write;
 dontaudit system_server appdomain:file write;
 
-get_prop(system_server, build_prop)
-# NFC check for Package Manager
-get_prop(system_server, nfc_service_prop)
-get_prop(system_server, omadm_prop)
+typeattribute system_server system_writes_vendor_properties_violators;
+set_prop(system_server, public_vendor_system_prop)
 
-get_prop(system_server, grip_prop)
+dontaudit system_server self:capability sys_module;

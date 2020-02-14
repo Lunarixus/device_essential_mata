@@ -16,8 +16,8 @@
 
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
-LOCAL_MODULE := android.hardware.dumpstate@1.0-service.mata
-LOCAL_INIT_RC := android.hardware.dumpstate@1.0-service.mata.rc
+LOCAL_MODULE := android.hardware.dumpstate@1.0-service.wahoo
+LOCAL_INIT_RC := android.hardware.dumpstate@1.0-service.wahoo.rc
 LOCAL_MODULE_RELATIVE_PATH := hw
 
 LOCAL_SRC_FILES := \
@@ -34,6 +34,8 @@ LOCAL_SHARED_LIBRARIES := \
     libhwbinder \
     liblog \
     libutils
+
+LOCAL_CFLAGS := -Werror -Wall
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_PROPRIETARY_MODULE := true
